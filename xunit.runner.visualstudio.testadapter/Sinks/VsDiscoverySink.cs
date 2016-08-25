@@ -12,6 +12,9 @@ using System.Reflection;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Security.Cryptography;
 using Windows.Security.Cryptography.Core;
+#elif NETCOREAPP1_0
+using System.Reflection;
+using System.Security.Cryptography;
 #else
 using System.Security.Cryptography;
 #endif
@@ -125,7 +128,7 @@ namespace Xunit.Runner.VisualStudio.TestAdapter
             {
                 var testCaseType = typeof(TestCase);
                 var stringType = typeof(string);
-#if PLATFORM_DOTNET
+#if PLATFORM_DOTNET || NETCOREAPP1_0
                 var property = testCaseType.GetRuntimeProperty("Traits");
 #else
                 var property = testCaseType.GetProperty("Traits");
@@ -134,7 +137,7 @@ namespace Xunit.Runner.VisualStudio.TestAdapter
                 if (property == null)
                     return null;
 
-#if PLATFORM_DOTNET
+#if PLATFORM_DOTNET || NETCOREAPP1_0
                 var method = property.PropertyType.GetRuntimeMethod("Add", new[] { typeof(string), typeof(string) });
 #else
                 var method = property.PropertyType.GetMethod("Add", new[] { typeof(string), typeof(string) });
@@ -220,7 +223,12 @@ namespace Xunit.Runner.VisualStudio.TestAdapter
             return new Guid(b);
         }
 #else
+
+#if NETCOREAPP1_0
+        readonly static HashAlgorithm Hasher = SHA1.Create();
+#else
         readonly static HashAlgorithm Hasher = new SHA1Managed();
+#endif
 
         static Guid GuidFromString(string data)
         {
